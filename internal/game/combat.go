@@ -16,7 +16,10 @@ const (
 	archerFireIntervalSec = 0.82
 	// enemySpawnInterval is the fixed seconds between spawn checks.
 	enemySpawnInterval = 4.8
-	lavaDPSPerSec      = 90.0
+	// lavaDPSHPFracPerSec is lava damage as a fraction of the enemy's *max HP* per
+	// second. At 3.0 every enemy (including bosses) dies in ≈0.33 s of lava contact,
+	// regardless of how much HP they have. extraLavaDPSMul() still scales this up.
+	lavaDPSHPFracPerSec = 3.0
 	arrowDamage        = 52.0
 	enemyDrawScale     = 1.06
 	arrowDrawScale     = 0.042
@@ -159,7 +162,9 @@ func (g *Game) updateCombat(dt float64) {
 			}
 		}
 		if g.lavaMask.IsLavaAtWorld(e.x, e.y) {
-			e.hp -= lavaDPSPerSec * g.extraLavaDPSMul() * dt
+			// Damage is proportional to max HP so bosses die as fast as normal
+			// enemies — lava is an impassable barrier for all unit types.
+			e.hp -= e.hpMax * lavaDPSHPFracPerSec * g.extraLavaDPSMul() * dt
 		}
 		row, col := world.WorldToTile(e.x, e.y)
 		if !g.lavaMask.IsLava(row, col) {

@@ -143,13 +143,8 @@ func migrateForward(sd *SaveData) {
 	}
 }
 
-// toSaveData extracts a SaveData snapshot. Holds combatMu.RLock while copying
-// combat-guarded scalars (gold is not guarded by combatMu but lives in Game).
+// toSaveData extracts a SaveData snapshot.
 func (g *Game) toSaveData() SaveData {
-	g.combatMu.RLock()
-	pt := g.playTime
-	g.combatMu.RUnlock()
-
 	archers := make([]savedArcher, len(g.worldArchers))
 	for i, a := range g.worldArchers {
 		archers[i] = savedArcher{TierIdx: a.tierIdx, X: a.x, Y: a.y}

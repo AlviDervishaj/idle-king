@@ -20,7 +20,7 @@ func TestPickEnemyForArcher(t *testing.T) {
 	// Enemy 3: skip (overkill)
 	// Enemy 4: skip (dying)
 
-	idx := g.pickEnemyForArcher(50, 100)
+	idx := g.pickEnemyForArcher(50, 100, nil)
 	if idx != 0 {
 		t.Errorf("pickEnemyForArcher(50, 100) = %d, want 0", idx)
 	}
@@ -28,13 +28,13 @@ func TestPickEnemyForArcher(t *testing.T) {
 	// Test range limit
 	// archerMaxRangePx = 1400.0 (from combat.go)
 	g.enemies[0].x = 2000
-	idx = g.pickEnemyForArcher(50, 100)
+	idx = g.pickEnemyForArcher(50, 100, nil)
 	if idx != 1 {
 		t.Errorf("pickEnemyForArcher(50, 100) after moving enemy 0 = %d, want 1", idx)
 	}
 
 	g.enemies[1].x = 2000
-	idx = g.pickEnemyForArcher(50, 100)
+	idx = g.pickEnemyForArcher(50, 100, nil)
 	if idx != -1 {
 		t.Errorf("pickEnemyForArcher(50, 100) with all out of range = %d, want -1", idx)
 	}
@@ -46,8 +46,8 @@ func TestArcherTargetScore(t *testing.T) {
 	e2 := &worldEnemy{x: 110, y: 0}
 
 	// e1 is closer and further left (more threat)
-	s1 := archerTargetScore(ax, ay, e1)
-	s2 := archerTargetScore(ax, ay, e2)
+	s1 := archerTargetScore(ax, ay, e1, 0)
+	s2 := archerTargetScore(ax, ay, e2, 0)
 
 	if s1 >= s2 {
 		t.Errorf("Score for e1 (%v) should be lower than e2 (%v)", s1, s2)
@@ -98,7 +98,7 @@ func TestLeadLandingPoint(t *testing.T) {
 	// enemyHitCenterOffsetY = -24.0
 	// arrowSpeedPxPerSec = 420.0
 
-	px, py, dur := leadLandingPoint(e, sx, sy)
+	px, py, dur := leadLandingPoint(e, sx, sy, arrowSpeedPxPerSec)
 
 	// Expected py should be e.y + enemyHitCenterOffsetY
 	if py != 100-24 {

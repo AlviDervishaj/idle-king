@@ -78,17 +78,24 @@ func (g *Game) metaUpgradeNextCost(id int) int {
 	return base + r*22
 }
 
-// dropKillLoot adds kill gold (with contract bonuses) and returns the amount granted.
+// dropKillLoot adds kill gold (with all bonuses) and returns the amount granted.
+// Also feeds GPS accumulator and lifetime stats. Called from beginEnemyDeath while
+// combatMu.Lock() is held.
 func (g *Game) dropKillLoot(vi int) float64 {
 	base := 1.0
 	if vi >= 0 && vi < len(g.enemyVariants) {
 		base = g.enemyVariants[vi].baseGoldReward
 	}
-	n := base * (1.0 + scavengerBonusPerRank*float64(g.metaUpgradeRank[metaScavenger]))
+	n := base *
+		(1.0 + scavengerBonusPerRank*float64(g.metaUpgradeRank[metaScavenger])) *
+		g.extraGoldMul() *
+		g.prestigeGoldMul()
 	if n < 0.1 {
 		n = 0.1
 	}
 	g.gold += n
+	g.stats.totalGoldEarned += n
+	g.gpsAccum += n
 	return n
 }
 

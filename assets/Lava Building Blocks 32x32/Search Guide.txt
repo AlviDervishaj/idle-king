@@ -1,0 +1,39 @@
+Naming system: 
+
+Prefix:
+ - "Lava" for the type of tile
+Affix Types and order:
+ - Thickness level: (1 to 4) i.e. "1" to "4"
+ - Glazed sides, how many they are and the location of those sides: "G2" "TL" meanig "G2"= Glazed sides 2 and "TL"= Top and Left
+ - Corners Painted, how many they are and the location of those painted corners: "C3" "TLTRBR" meaning "C3" = 3 Corners painted and the locations "TLTRBR" = Top Left, Top Right, Bottom Right
+-Affixes are written Clock-wise i.e. 
+ - "Top->Right->Bottom->Left" for glazed sides
+ - "Top Right->Bottom Right->Bottom Left->TopLeft" for corners
+Example:
+-Lava->(1-4)->G(1-4(location))->C(1-4(location))
+ - Type of tile followed by thickness level followed by Glazed sides number and their location followed by painted Corners number and their location
+
+Affixes will be input only if they exist on the tile, if not, their abbreviations will not be typed in.
+
+
+Examples: 
+
+
+-Lava1G2BLC1BR
+ -Lava, Thickness1, Glazed sides:2 - Bottom and Left, Corner painted:1 - Bottom-Right
+
+-Lava2G1LC2TRBL
+ -Lava, Thickness2, Glazed sides:1 - Left, Corners painted:2 - Top-Right and Bottom-left
+
+-Lava3G3TRB
+ -Lava, Thickness3, Glazed sides:3 - Top, Right, Bottom (No painted corners)
+
+-Lava4G2RL 
+ -Lava, Thickness4, Glazed sides:4 - Right and Left (No painted corners)
+
+-Lava2C3TLBRTR
+ - Lava, Thickness 2, Corners painted:3 - Top-Left, Bottom-Right, Top-Right (No Glazed Sides)
+
+
+
+

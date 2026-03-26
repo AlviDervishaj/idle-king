@@ -1,0 +1,82 @@
+{
+    "activeFile": "idle-king-map.tmx",
+    "expandedProjectPaths": [
+        "/Users/shunger/Projects/idle-king/assets",
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "TX Props - 16.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 0.75
+        },
+        "TX Props with Shadow.tsx": {
+            "scaleInDock": 5.5,
+            "scaleInEditor": 3
+        },
+        "TX Props.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "TX Shadow.tsx": {
+            "scaleInDock": 0.5573,
+            "scaleInEditor": 1
+        },
+        "TX Tileset Grass.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "TileSetThickness1.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "[Common] MiniArcher.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "freelavatileset.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 4
+        },
+        "idle-king-map.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 367,
+                "y": 214.5
+            }
+        }
+    },
+    "last.exportedFilePath": "/Users/shunger/Projects/idle-king/final-background",
+    "last.imagePath": "/Users/shunger/Projects/idle-king/assets/Lava Building Blocks 32x32/Thickness 1",
+    "map.height": 32,
+    "map.lastUsedExportFilter": "CSV files (*.csv)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 32,
+    "openFiles": [
+        "idle-king-map.tmx",
+        "[Common] MiniArcher.tsx"
+    ],
+    "project": "idle-king-map.tiled-project",
+    "recentFiles": [
+        "[Common] MiniArcher.tsx",
+        "idle-king-map.tmx",
+        "TX Tileset Grass.tsx",
+        "TX Props.tsx",
+        "TX Props with Shadow.tsx",
+        "TX Shadow.tsx",
+        "freelavatileset.tsx",
+        "TileSetThickness1.tsx",
+        "TX Props - 16.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 32,
+        "width": 32
+    }
+}

@@ -461,26 +461,11 @@ func (g *Game) Update() error {
 		mx, my := ebiten.CursorPosition()
 		cur := image.Pt(mx, my)
 		g.pm.resumeHover = cur.In(g.pm.resumeRect)
-		for i := range g.pm.speedRects {
-			g.pm.speedHover[i] = cur.In(g.pm.speedRects[i])
-		}
-		g.pm.statsHover = cur.In(g.pm.statsRect)
 		g.pm.quitHover = cur.In(g.pm.quitRect)
 
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			if g.pm.resumeHover {
 				g.paused = false
-			}
-			for i := range g.pm.speedRects {
-				if g.pm.speedHover[i] {
-					g.speedIndex = i
-				}
-			}
-			if g.pm.statsHover {
-				if !g.shopOpen {
-					g.shopOpen = true
-				}
-				g.statsOpen = !g.statsOpen
 			}
 			if g.pm.quitHover {
 				return ErrQuit
@@ -628,7 +613,6 @@ func (g *Game) Update() error {
 			g.shopOpen = !g.shopOpen
 			if !g.shopOpen {
 				g.selectedArcherIdx = -1
-				g.statsOpen = false
 			}
 		} else if g.shopOpen {
 			// Tab bar clicks.
@@ -860,9 +844,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	if g.shopOpen {
 		g.drawRecruitPanel(screen)
-		if g.statsOpen {
-			g.drawStatsPanel(screen)
-		}
+	}
+	if g.statsOpen {
+		g.drawStatsPanel(screen)
 	}
 	g.drawShopToggle(screen)
 	g.drawHUD(screen)

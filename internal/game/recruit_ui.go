@@ -184,8 +184,7 @@ func (g *Game) drawCombatTab(screen *ebiten.Image) {
 
 	// Combat right column label.
 	rightL := shopRightInnerL
-	titleY := baselineY(bitmapfont.Face, shopContentTop-16)
-	text.Draw(screen, "COMBAT", bitmapfont.Face, rightL, titleY, colRecruitGold)
+	drawSectionHeader(screen, "COMBAT", rightL, shopContentTop-16)
 
 	// Laser upgrades (first two slots).
 	g.drawGenericUpgradeBtn(screen, g.combatRightRects[0], g.combatRightHovered[0],
@@ -220,10 +219,9 @@ func archerTrainingDesc(g *Game) string {
 
 func (g *Game) drawEconomyTab(screen *ebiten.Image) {
 	rightL := shopRightInnerL
-	titleY := baselineY(bitmapfont.Face, shopContentTop-16)
-	text.Draw(screen, "ECONOMY", bitmapfont.Face, rightL, titleY, colRecruitGold)
 	leftL := shopInnerL
-	text.Draw(screen, "CONTRACTS", bitmapfont.Face, leftL, titleY, colRecruitGold)
+	drawSectionHeader(screen, "ECONOMY", rightL, shopContentTop-16)
+	drawSectionHeader(screen, "CONTRACTS", leftL, shopContentTop-16)
 
 	// Economy left: meta upgrades + enemy unlock.
 	g.drawGenericUpgradeBtn(screen, g.ecoLeftRects[0], g.ecoLeftHovered[0],
@@ -248,8 +246,7 @@ func (g *Game) drawEconomyTab(screen *ebiten.Image) {
 
 func (g *Game) drawAutomationTab(screen *ebiten.Image) {
 	leftL := shopInnerL
-	titleY := baselineY(bitmapfont.Face, shopContentTop-16)
-	text.Draw(screen, "AUTOMATION", bitmapfont.Face, leftL, titleY, colRecruitGold)
+	drawSectionHeader(screen, "AUTOMATION", leftL, shopContentTop-16)
 
 	// Slot 0: Auto-Scribe buy/status.
 	r := g.autoLeftRects[0]
@@ -299,9 +296,8 @@ func (g *Game) drawPrestigeTab(screen *ebiten.Image) {
 	leftL := shopInnerL
 	rightL := shopRightInnerL
 
-	titleY := baselineY(bitmapfont.Face, shopContentTop-16)
-	text.Draw(screen, "PRESTIGE", bitmapfont.Face, leftL, titleY, colRecruitGold)
-	text.Draw(screen, "SOUL UPGRADES", bitmapfont.Face, rightL, titleY, colRecruitGold)
+	drawSectionHeader(screen, "PRESTIGE", leftL, shopContentTop-16)
+	drawSectionHeader(screen, "SOUL UPGRADES", rightL, shopContentTop-16)
 
 	// Soul balance display (left slot 0).
 	soulsBox := image.Rect(shopInnerL, shopContentTop, shopLeftInnerR, shopContentTop+upgradeBtnH)
@@ -667,6 +663,18 @@ func (g *Game) drawEnemyUnlockButton(screen *ebiten.Image) {
 		rc = colRecruitMuted
 	}
 	text.Draw(screen, right, bitmapfont.Face, innerR-textW(bitmapfont.Face, right), base, rc)
+}
+
+// drawSectionHeader draws a gold-coloured section label with extra vertical breathing
+// room: a subtle underline sits 6px below the baseline to visually separate the
+// heading from the buttons below it.
+func drawSectionHeader(screen *ebiten.Image, label string, x, topY int) {
+	baseY := baselineY(bitmapfont.Face, topY+4) // +4 top padding
+	text.Draw(screen, label, bitmapfont.Face, x, baseY, colRecruitGold)
+	underY := float32(baseY + 6) // 6px below baseline
+	endX := float32(x + textW(bitmapfont.Face, label))
+	vector.StrokeLine(screen, float32(x), underY, endX, underY, 1,
+		color.RGBA{colRecruitGold.R, colRecruitGold.G, colRecruitGold.B, 0x55}, false)
 }
 
 // drawShopToggle renders the Shop and Stats toggle buttons (always visible).

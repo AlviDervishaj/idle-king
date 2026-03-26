@@ -523,11 +523,12 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// Auto-save (real time, every 30s).
+	// Auto-save (real time, every 30s). Run synchronously on the game thread to
+	// avoid data races — marshal+write is fast enough not to cause frame drops.
 	g.autoSaveAccum += rawDt
 	if g.autoSaveAccum >= 30.0 {
 		g.autoSaveAccum = 0
-		go func() { _ = g.Save() }()
+		_ = g.Save()
 	}
 
 	// --- Hover detection ---

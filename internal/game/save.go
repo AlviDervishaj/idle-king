@@ -98,6 +98,9 @@ func (g *Game) Save() error {
 	if err := os.WriteFile(tmp, data, 0o644); err != nil {
 		return fmt.Errorf("save: write: %w", err)
 	}
+	// Remove the destination first so os.Rename succeeds on platforms (e.g. Windows)
+	// that refuse to replace an existing file atomically.
+	_ = os.Remove(path)
 	if err := os.Rename(tmp, path); err != nil {
 		return fmt.Errorf("save: rename: %w", err)
 	}
@@ -173,7 +176,7 @@ func (g *Game) toSaveData() SaveData {
 		TotalBossKills:     g.stats.totalBossKills,
 		MaxGoldPerSec:      g.stats.maxGoldPerSec,
 		BestBossGold:       g.stats.bestBossGold,
-		LifetimePlaySec:    g.stats.lifetimePlaySec + pt,
+		LifetimePlaySec:    g.stats.lifetimePlaySec, // already accumulates rawDt every frame; do not add playTime
 		WaveCounter:        g.waveCounter,
 		GoldPerSecSnapshot: g.gpsSample,
 		SpeedIndex:         g.speedIndex,
@@ -271,9 +274,10 @@ func applyOfflineProgress(g *Game, sd SaveData) {
 	if elapsed > maxOfflineSec {
 		elapsed = maxOfflineSec
 	}
+	// GoldPerSecSnapshot already incorporates prestigeGoldMul and extraGoldMul
+	// (dropKillLoot applies them before feeding gpsAccum). Do not re-multiply.
 	eff := g.offlineEfficiency()
 	earned := sd.GoldPerSecSnapshot * elapsed * eff
-	earned *= g.prestigeGoldMul() * g.extraGoldMul()
 	g.gold += earned
 	g.stats.totalGoldEarned += earned
 
@@ -285,6 +289,10 @@ func applyOfflineProgress(g *Game, sd SaveData) {
 	}
 	g.waveCounter += offlineWaves
 	g.stats.totalWaves += int64(offlineWaves)
+	// Advance boss schedule so nextBossWave is never behind waveCounter.
+	for g.boss.nextBossWave <= g.waveCounter {
+		g.boss.nextBossWave += bossWaveInterval
+	}
 
 	h := elapsed / 3600
 	g.offlineMessage = fmt.Sprintf(

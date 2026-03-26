@@ -461,7 +461,7 @@ func (g *Game) beginEnemyDeath(e *worldEnemy, cause deathCause) {
 			g.stats.totalBossKills++
 			g.boss.activeBossID = 0
 		}
-		n := g.dropKillLoot(e.variantIdx) * goldMul
+		n := g.dropKillLoot(e.variantIdx, goldMul)
 		if e.isBoss && n > g.stats.bestBossGold {
 			g.stats.bestBossGold = n
 		}

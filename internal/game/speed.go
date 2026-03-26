@@ -7,8 +7,7 @@ var speedMultipliers = [3]float64{1.0, 2.0, 4.0}
 // speedLabels are the display strings for the speed buttons in the HUD.
 var speedLabels = [3]string{"1x", "2x", "4x"}
 
-// gameplayDT returns the frame delta scaled by the current speed multiplier.
-// All combat, spawn, arrow movement, lava damage, and gold-float updates use this.
-func (g *Game) gameplayDT() float64 {
-	return g.frameDT() * speedMultipliers[g.speedIndex]
-}
+// NOTE: gameplayDT is intentionally not defined here. Update() uses the pattern:
+//   rawDt := g.frameDT()
+//   dt     := rawDt * speedMultipliers[g.speedIndex]
+// Calling frameDT() inside a helper would mutate lastFrameTime twice per frame.

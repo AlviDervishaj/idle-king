@@ -130,11 +130,11 @@ func (g *Game) doPrestige() {
 	}
 	g.autoMgr.accum = 0
 
-	// Reset wave counter and boss state.
+	// Reset run-scoped wave counter and boss state.
+	// stats.totalWaves is a lifetime counter and must NOT be reset here.
 	g.waveCounter = 0
 	g.boss.nextBossWave = bossWaveInterval
 	g.boss.activeBossID = 0
-	g.stats.totalWaves = 0
 
 	// Reset combat state (requires lock).
 	g.combatMu.Lock()

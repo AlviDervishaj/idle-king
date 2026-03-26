@@ -31,6 +31,8 @@ func formatGold(n float64) string {
 }
 
 // currentDPS computes the total current damage per second across all archers + laser.
+// arrowDamageForTier already incorporates achievementMuls.damageMul, so only the
+// laser portion needs the multiplier applied here.
 func (g *Game) currentDPS() float64 {
 	interval := archerFireIntervalSec * g.extraFireIntervalMul()
 	if interval < 0.01 {
@@ -40,9 +42,10 @@ func (g *Game) currentDPS() float64 {
 	for i := range g.worldArchers {
 		dps += g.arrowDamageForTier(g.worldArchers[i].tierIdx) / interval
 	}
-	laserDmg := laserDPSPerSec + float64(g.metaUpgradeRank[metaLaserDamage])*15.0
+	laserDmg := (laserDPSPerSec + float64(g.metaUpgradeRank[metaLaserDamage])*15.0) *
+		(1.0 + g.achievementMuls.damageMul)
 	dps += laserDmg
-	return dps * (1.0 + g.achievementMuls.damageMul)
+	return dps
 }
 
 // drawHUD renders the always-visible overlay in the top-right corner of the screen.

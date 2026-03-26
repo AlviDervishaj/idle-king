@@ -79,9 +79,10 @@ func (g *Game) metaUpgradeNextCost(id int) int {
 }
 
 // dropKillLoot adds kill gold (with all bonuses) and returns the amount granted.
-// Also feeds GPS accumulator and lifetime stats. Called from beginEnemyDeath while
-// combatMu.Lock() is held.
-func (g *Game) dropKillLoot(vi int) float64 {
+// goldMul is an extra multiplier applied on top of all standard bonuses (e.g. boss
+// scaling). Pass 1.0 for normal enemies. Also feeds GPS accumulator and lifetime
+// stats. Called from beginEnemyDeath while combatMu.Lock() is held.
+func (g *Game) dropKillLoot(vi int, goldMul float64) float64 {
 	base := 1.0
 	if vi >= 0 && vi < len(g.enemyVariants) {
 		base = g.enemyVariants[vi].baseGoldReward
@@ -89,7 +90,8 @@ func (g *Game) dropKillLoot(vi int) float64 {
 	n := base *
 		(1.0 + scavengerBonusPerRank*float64(g.metaUpgradeRank[metaScavenger])) *
 		g.extraGoldMul() *
-		g.prestigeGoldMul()
+		g.prestigeGoldMul() *
+		goldMul
 	if n < 0.1 {
 		n = 0.1
 	}

@@ -203,6 +203,10 @@ type Game struct {
 	autoMgr    autoManagerState
 	boss       bossState
 	waveCounter int
+
+	// Pause menu
+	paused bool
+	pm     pauseMenuState
 }
 
 const (
@@ -444,6 +448,47 @@ func (g *Game) existingArcherFeet() [][2]float64 {
 
 func (g *Game) Update() error {
 	rawDt := g.frameDT()
+
+	// ESC toggles the pause menu — checked before any other logic.
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		g.paused = !g.paused
+		return nil
+	}
+
+	// When paused: handle pause menu hover + clicks, then return early so all
+	// gameplay (combat, timers, animations) stays frozen.
+	if g.paused {
+		mx, my := ebiten.CursorPosition()
+		cur := image.Pt(mx, my)
+		g.pm.resumeHover = cur.In(g.pm.resumeRect)
+		for i := range g.pm.speedRects {
+			g.pm.speedHover[i] = cur.In(g.pm.speedRects[i])
+		}
+		g.pm.statsHover = cur.In(g.pm.statsRect)
+		g.pm.quitHover = cur.In(g.pm.quitRect)
+
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			if g.pm.resumeHover {
+				g.paused = false
+			}
+			for i := range g.pm.speedRects {
+				if g.pm.speedHover[i] {
+					g.speedIndex = i
+				}
+			}
+			if g.pm.statsHover {
+				if !g.shopOpen {
+					g.shopOpen = true
+				}
+				g.statsOpen = !g.statsOpen
+			}
+			if g.pm.quitHover {
+				return ErrQuit
+			}
+		}
+		return nil
+	}
+
 	dt := rawDt * speedMultipliers[g.speedIndex]
 
 	// Lifetime play time (unscaled — real time spent, not simulated time).
@@ -821,6 +866,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	g.drawShopToggle(screen)
 	g.drawHUD(screen)
+	if g.paused {
+		g.drawPauseMenu(screen)
+	}
 }
 
 func (g *Game) drawCombat(screen *ebiten.Image, ox, oy, mapScale float64) {

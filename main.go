@@ -68,7 +68,7 @@ func main() {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeDisabled)
 	ebiten.SetTPS(60)
 
-	if err := ebiten.RunGame(g); err != nil {
+	if err := ebiten.RunGame(g); err != nil && err != game.ErrQuit {
 		log.Fatal(err)
 	}
 

@@ -92,7 +92,8 @@ func (g *Game) selectedArcherHireCost() int {
 
 func (g *Game) arrowDamageForTier(tierIdx int) float64 {
 	if tierIdx < 0 || tierIdx >= len(g.archerTierRuntimes) {
-		return arrowDamage
+		return arrowDamage * g.extraArrowDamageMul() * (1.0 + g.achievementMuls.damageMul)
 	}
-	return arrowDamage * g.archerTierRuntimes[tierIdx].damageMul
+	return arrowDamage * g.archerTierRuntimes[tierIdx].damageMul *
+		g.extraArrowDamageMul() * (1.0 + g.achievementMuls.damageMul)
 }

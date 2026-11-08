@@ -16,7 +16,10 @@ const (
 	archerFireIntervalSec = 0.82
 	// enemySpawnInterval is the fixed seconds between spawn checks.
 	enemySpawnInterval = 4.8
-	lavaDPSPerSec      = 90.0
+	// lavaDPSHPFracPerSec is lava damage as a fraction of the enemy's *max HP* per
+	// second. At 3.0 every enemy (including bosses) dies in ≈0.33 s of lava contact,
+	// regardless of how much HP they have. extraLavaDPSMul() still scales this up.
+	lavaDPSHPFracPerSec = 3.0
 	arrowDamage        = 52.0
 	enemyDrawScale     = 1.06
 	arrowDrawScale     = 0.042
@@ -58,6 +61,8 @@ type worldEnemy struct {
 
 	id             uint64
 	incomingDamage float64
+
+	isBoss bool // boss enemies have scaled HP and drop bonus gold
 }
 
 type worldArrow struct {
@@ -95,6 +100,13 @@ func (g *Game) updateCombat(dt float64) {
 			break
 		}
 		g.spawnAccum -= interval
+		g.waveCounter++
+		g.stats.totalWaves++
+		// Spawn a boss every bossWaveInterval waves.
+		if g.waveCounter >= g.boss.nextBossWave {
+			g.spawnBossWave()
+			g.boss.nextBossWave = g.waveCounter + bossWaveInterval
+		}
 		n := 5 + g.metaUpgradeRank[metaSpawnWaveSize]
 		for range n {
 			if x, y, ok := spawn.PickEnemyFeet(g.rng, g.lavaMask); ok {
@@ -150,7 +162,9 @@ func (g *Game) updateCombat(dt float64) {
 			}
 		}
 		if g.lavaMask.IsLavaAtWorld(e.x, e.y) {
-			e.hp -= lavaDPSPerSec * dt
+			// Damage is proportional to max HP so bosses die as fast as normal
+			// enemies — lava is an impassable barrier for all unit types.
+			e.hp -= e.hpMax * lavaDPSHPFracPerSec * g.extraLavaDPSMul() * dt
 		}
 		row, col := world.WorldToTile(e.x, e.y)
 		if !g.lavaMask.IsLava(row, col) {
@@ -170,8 +184,9 @@ func (g *Game) updateCombat(dt float64) {
 	}
 	g.enemies = next
 
+	fireInterval := archerFireIntervalSec * g.extraFireIntervalMul()
 	g.fireAccum += dt
-	if g.fireAccum >= archerFireIntervalSec {
+	if g.fireAccum >= fireInterval {
 		g.fireAccum = 0
 		g.fireArrows()
 	}
@@ -320,7 +335,8 @@ func (g *Game) updateArcherAttacks(dt float64) {
 			if math.Hypot(e.x-sx, e.y-sy) < 8 {
 				continue
 			}
-			endX, endY, duration := leadLandingPoint(e, sx, sy)
+			arrowSpd := arrowSpeedPxPerSec * g.extraArrowSpeedMul()
+			endX, endY, duration := leadLandingPoint(e, sx, sy, arrowSpd)
 			horiz := math.Abs(endX - sx)
 			arcH := horiz * arrowArcHeightFactor
 			if arcH < arrowArcHeightMinPx {
@@ -406,7 +422,7 @@ func (g *Game) pickEnemyForArcher(ax, ay float64, tickPending map[uint64]float64
 	return best
 }
 
-func leadLandingPoint(e *worldEnemy, sx, sy float64) (predX, predY, duration float64) {
+func leadLandingPoint(e *worldEnemy, sx, sy, arrowSpeed float64) (predX, predY, duration float64) {
 	predX, predY = e.x, e.y+enemyHitCenterOffsetY
 	var dist float64
 	for range 2 {
@@ -416,7 +432,7 @@ func leadLandingPoint(e *worldEnemy, sx, sy float64) (predX, predY, duration flo
 		if dist < 4 {
 			dist = 4
 		}
-		duration = dist / arrowSpeedPxPerSec
+		duration = dist / arrowSpeed
 		if duration < arrowFlightDurationMinSec {
 			duration = arrowFlightDurationMinSec
 		}
@@ -437,7 +453,23 @@ func (g *Game) beginEnemyDeath(e *worldEnemy, cause deathCause) {
 	}
 	playerKill := cause == deathCausePlayerArrow || cause == deathCausePlayerLaser
 	if playerKill {
-		n := g.dropKillLoot(e.variantIdx)
+		// Stats tracking.
+		g.stats.totalKills++
+		if e.variantIdx >= 0 && int(e.variantIdx) < len(g.stats.killsByVariant) {
+			g.stats.killsByVariant[e.variantIdx]++
+		}
+
+		goldMul := 1.0
+		if e.isBoss {
+			scaleFactor := 1.0 + float64(g.waveCounter)/200.0
+			goldMul = bossGoldMultiplier * scaleFactor
+			g.stats.totalBossKills++
+			g.boss.activeBossID = 0
+		}
+		n := g.dropKillLoot(e.variantIdx, goldMul)
+		if e.isBoss && n > g.stats.bestBossGold {
+			g.stats.bestBossGold = n
+		}
 		if n > 0 {
 			g.spawnGoldFloat(e.x, e.y-enemyHealthBarAboveFeet-10, n)
 		}
@@ -503,9 +535,15 @@ func (g *Game) drawEnemyHealthBars(screen *ebiten.Image, ox, oy, mapScale float6
 		if fillW < 0.5 {
 			continue
 		}
-		rr := uint8(255 * (1 - ratio))
-		gg := uint8(255 * ratio)
-		fg := color.RGBA{R: rr, G: gg, B: 0x28, A: 0xf5}
+		var fg color.RGBA
+		if e.isBoss {
+			// Bosses use a purple/gold health bar for visibility.
+			fg = color.RGBA{R: 0xcc, G: 0x44, B: 0xee, A: 0xf5}
+		} else {
+			rr := uint8(255 * (1 - ratio))
+			gg := uint8(255 * ratio)
+			fg = color.RGBA{R: rr, G: gg, B: 0x28, A: 0xf5}
+		}
 		vector.FillRect(screen, bx, by, fillW, barH, fg, false)
 	}
 }

@@ -59,12 +59,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := g.Load(); err != nil {
+		log.Printf("idle-king: no save file or load error: %v", err)
+	}
+
 	ebiten.SetWindowSize(world.ViewportWidth, world.ViewportHeight)
 	ebiten.SetWindowTitle("Idle King")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeDisabled)
 	ebiten.SetTPS(60)
 
-	if err := ebiten.RunGame(g); err != nil {
+	if err := ebiten.RunGame(g); err != nil && err != game.ErrQuit {
 		log.Fatal(err)
+	}
+
+	if err := g.Save(); err != nil {
+		log.Printf("idle-king: save on exit failed: %v", err)
 	}
 }
